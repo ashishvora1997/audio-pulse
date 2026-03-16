@@ -1,6 +1,6 @@
 # 🎙️ audio-pulse
 
-A lightweight, customizable React audio recorder with real-time waveform visualization — written in TypeScript.
+**React audio recorder** with real-time waveform visualization. Record MP3 audio from the microphone, visualize live sound waves on a canvas, and control recording state with a simple hook — fully typed with TypeScript.
 
 [![npm version](https://img.shields.io/npm/v/audio-pulse)](https://www.npmjs.com/package/audio-pulse)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/audio-pulse)](https://bundlephobia.com/package/audio-pulse)
@@ -66,9 +66,9 @@ export default function Recorder() {
   };
 
   const handleStartAgain = () => {
-    setAudio(null);    // hide player
-    reset();           // go back to NONE first — triggers clean context teardown
-    setTimeout(start, 0); // then start fresh on next tick
+    setAudio(null);           // hide player
+    reset();                  // go back to NONE — clean context teardown
+    setTimeout(start, 0);    // start fresh on next tick
   };
 
   return (
@@ -129,8 +129,6 @@ export default function Recorder() {
 
 ## Light Theme Example
 
-Matching the subtle flat-wave style:
-
 ```tsx
 <AudioPulse
   state={recordState}
@@ -159,7 +157,7 @@ export default function App() {
   const [state, setState] = useState<RecordStateType>(RecordState.NONE);
 
   const handleStop = (audio: AudioResult) => {
-    console.log(audio.url);   // object URL  → <audio src={...} />
+    console.log(audio.url);   // object URL → use in <audio src={...} />
     console.log(audio.blob);  // Blob (audio/mp3)
   };
 

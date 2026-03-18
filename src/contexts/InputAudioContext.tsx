@@ -5,15 +5,15 @@ import {
   useState,
   useCallback,
   ReactNode,
-} from 'react';
-import { useMediaStream } from './MediaStreamContext';
-import type { InputAudioContextValue } from '../types';
+} from "react";
+import { useMediaStream } from "./MediaStreamContext";
+import type { InputAudioContextValue } from "../types";
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
 const InputAudioContext = createContext<InputAudioContextValue>({
   audioCtx: undefined,
-  source:   undefined,
+  source: undefined,
 });
 
 export const useInputAudio = (): InputAudioContextValue =>
@@ -27,8 +27,10 @@ interface InputAudioProviderProps {
 
 export const InputAudioProvider = ({ children }: InputAudioProviderProps) => {
   const [context, setContext] = useState<AudioContext | undefined>();
-  const [source, setSource]   = useState<MediaStreamAudioSourceNode | undefined>();
-  const { stream }            = useMediaStream();
+  const [source, setSource] = useState<
+    MediaStreamAudioSourceNode | undefined
+  >();
+  const { stream } = useMediaStream();
 
   const stop = useCallback(() => {
     try {

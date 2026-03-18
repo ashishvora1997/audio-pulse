@@ -4,9 +4,9 @@ import {
   useEffect,
   useState,
   ReactNode,
-} from 'react';
-import { useInputAudio } from './InputAudioContext';
-import type { AudioAnalyserContextValue } from '../types';
+} from "react";
+import { useInputAudio } from "./InputAudioContext";
+import type { AudioAnalyserContextValue } from "../types";
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
@@ -21,22 +21,34 @@ export const useAudioAnalyser = (): AudioAnalyserContextValue =>
 
 interface AudioAnalyserProviderProps {
   children: ReactNode;
-  /** AnalyserNode.smoothingTimeConstant (0–1). @default 1 */
+  /**
+   * AnalyserNode.smoothingTimeConstant (0–1).
+   * Lower = more reactive / taller waves.
+   * @default 0.8
+   */
   smoothingTimeConstant?: number;
+  /**
+   * AnalyserNode.fftSize — must be power of 2 (32–32768).
+   * Lower = fewer samples = more dramatic movement per sample.
+   * @default 512
+   */
+  fftSize?: number;
 }
 
 export const AudioAnalyserProvider = ({
   children,
-  smoothingTimeConstant = 1,
+  smoothingTimeConstant = 0.8, // was 1 — too smooth, kills amplitude
+  fftSize = 512, // was default 2048 — too many samples, flattens wave
 }: AudioAnalyserProviderProps) => {
   const [analyser, setAnalyser] = useState<AnalyserNode | undefined>();
-  const { source }              = useInputAudio();
+  const { source } = useInputAudio();
 
   // Create analyser node when source is ready
   useEffect(() => {
     if (!source) return;
 
     const node = source.context.createAnalyser();
+    node.fftSize = fftSize;
     node.smoothingTimeConstant = smoothingTimeConstant;
     source.connect(node);
     setAnalyser(node);

@@ -6,23 +6,23 @@ import {
   useEffect,
   useRef,
   ReactNode,
-} from 'react';
-import AudioRecorder from 'audio-recorder-polyfill';
-import mpegEncoder from 'audio-recorder-polyfill/mpeg-encoder';
-import type { MediaStreamContextValue, AudioResult } from '../types';
+} from "react";
+import AudioRecorder from "audio-recorder-polyfill";
+import mpegEncoder from "audio-recorder-polyfill/mpeg-encoder";
+import type { MediaStreamContextValue, AudioResult } from "../types";
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
 const MediaStreamContext = createContext<MediaStreamContextValue>({
-  stream:   undefined,
-  url:      null,
-  isPause:  false,
-  isStop:   false,
-  isError:  '',
-  start:    async () => {},
-  stop:     async () => {},
-  pause:    () => {},
-  resume:   () => {},
+  stream: undefined,
+  url: null,
+  isPause: false,
+  isStop: false,
+  isError: "",
+  start: async () => {},
+  stop: async () => {},
+  pause: () => {},
+  resume: () => {},
 });
 
 export const useMediaStream = (): MediaStreamContextValue =>
@@ -41,14 +41,16 @@ export const MediaStreamProvider = ({
   audio = true,
   video = false,
 }: MediaStreamProviderProps) => {
-  const [stream, setStream]     = useState<MediaStream | undefined>();
-  const [url, setUrl]           = useState<AudioResult | null>(null);
-  const [isPause, setIsPaused]  = useState(false);
-  const [isStop, setIsStop]     = useState(false);
-  const [isError, setIsError]   = useState('');
+  const [stream, setStream] = useState<MediaStream | undefined>();
+  const [url, setUrl] = useState<AudioResult | null>(null);
+  const [isPause, setIsPaused] = useState(false);
+  const [isStop, setIsStop] = useState(false);
+  const [isError, setIsError] = useState("");
 
-  const audioChunks      = useRef<Blob[]>([]);
-  const mediaRecorderRef = useRef<InstanceType<typeof AudioRecorder> | null>(null);
+  const audioChunks = useRef<Blob[]>([]);
+  const mediaRecorderRef = useRef<InstanceType<typeof AudioRecorder> | null>(
+    null,
+  );
 
   // Cleanup stream tracks on unmount
   useEffect(() => {
@@ -60,11 +62,11 @@ export const MediaStreamProvider = ({
   const handleDataAvailable = (event: { data: Blob }) => {
     if (event.data.size > 0) {
       audioChunks.current = [...audioChunks.current, event.data];
-      const audioBlob = new Blob(audioChunks.current, { type: 'audio/mp3' });
+      const audioBlob = new Blob(audioChunks.current, { type: "audio/mp3" });
       setUrl({
         blob: audioBlob,
-        url:  URL.createObjectURL(audioBlob),
-        type: 'audio/mp3',
+        url: URL.createObjectURL(audioBlob),
+        type: "audio/mp3",
       });
     }
   };
@@ -72,22 +74,29 @@ export const MediaStreamProvider = ({
   const start = useCallback(async () => {
     try {
       setIsStop(false);
-      setIsError('');
+      setIsError("");
       setUrl(null);
 
       // Configure polyfill for MP3 output
-      AudioRecorder.encoder             = mpegEncoder;
-      AudioRecorder.prototype.mimeType  = 'audio/mpeg';
-      audioChunks.current               = [];
+      AudioRecorder.encoder = mpegEncoder;
+      AudioRecorder.prototype.mimeType = "audio/mpeg";
+      audioChunks.current = [];
 
-      const mediaStream = await navigator?.mediaDevices?.getUserMedia({ audio, video });
+      const mediaStream = await navigator?.mediaDevices?.getUserMedia({
+        audio,
+        video,
+      });
 
       mediaRecorderRef.current = new AudioRecorder(mediaStream);
-      mediaRecorderRef.current.addEventListener('dataavailable', handleDataAvailable);
+      mediaRecorderRef.current.addEventListener(
+        "dataavailable",
+        handleDataAvailable,
+      );
       mediaRecorderRef.current.start();
       setStream(mediaStream);
     } catch {
-      const msg = 'Microphone permission denied. Please allow mic access to record.';
+      const msg =
+        "Microphone permission denied. Please allow mic access to record.";
       setIsError(msg);
     }
   }, [audio, video]);
@@ -96,7 +105,10 @@ export const MediaStreamProvider = ({
     if (!stream) return;
     stream.getTracks().forEach((t) => t.stop());
     mediaRecorderRef.current?.stop();
-    mediaRecorderRef.current?.removeEventListener('dataavailable', handleDataAvailable);
+    mediaRecorderRef.current?.removeEventListener(
+      "dataavailable",
+      handleDataAvailable,
+    );
     setStream(undefined);
     setIsStop(true);
   }, [stream]);
@@ -117,7 +129,17 @@ export const MediaStreamProvider = ({
 
   return (
     <MediaStreamContext.Provider
-      value={{ stream, start, stop, url, pause, resume, isPause, isStop, isError }}
+      value={{
+        stream,
+        start,
+        stop,
+        url,
+        pause,
+        resume,
+        isPause,
+        isStop,
+        isError,
+      }}
     >
       {children}
     </MediaStreamContext.Provider>

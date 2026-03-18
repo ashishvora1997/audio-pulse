@@ -1,8 +1,8 @@
-import { AudioAnalyserProvider } from './contexts/AudioAnalyserContext';
-import { MediaStreamProvider } from './contexts/MediaStreamContext';
-import { InputAudioProvider } from './contexts/InputAudioContext';
-import AudioVisualizer from './components/AudioVisualizer';
-import type { AudioPulseProps } from './types';
+import { AudioAnalyserProvider } from "./contexts/AudioAnalyserContext";
+import { MediaStreamProvider } from "./contexts/MediaStreamContext";
+import { InputAudioProvider } from "./contexts/InputAudioContext";
+import AudioVisualizer from "./components/AudioVisualizer";
+import type { AudioPulseProps } from "./types";
 
 /**
  * AudioPulse — drop-in React audio recorder with real-time waveform visualization.
@@ -13,12 +13,16 @@ import type { AudioPulseProps } from './types';
  * <AudioPulse state={recordState} onStop={(audio) => console.log(audio.url)} />
  */
 const AudioPulse = ({
-  smoothingTimeConstant = 1,
+  smoothingTimeConstant = 0.8,
+  fftSize = 512,
   ...props
 }: AudioPulseProps) => (
   <MediaStreamProvider audio video={false}>
     <InputAudioProvider>
-      <AudioAnalyserProvider smoothingTimeConstant={smoothingTimeConstant}>
+      <AudioAnalyserProvider
+        smoothingTimeConstant={smoothingTimeConstant}
+        fftSize={fftSize}
+      >
         <AudioVisualizer {...props} />
       </AudioAnalyserProvider>
     </InputAudioProvider>

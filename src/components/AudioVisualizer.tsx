@@ -1,49 +1,64 @@
-import { useRef, useEffect, useState } from 'react';
-import { useAudioAnalyser } from '../contexts/AudioAnalyserContext';
-import { useMediaStream } from '../contexts/MediaStreamContext';
-import { RecordState } from '../types';
-import type { AudioPulseProps } from '../types';
+import { useRef, useEffect, useState } from "react";
+import { useAudioAnalyser } from "../contexts/AudioAnalyserContext";
+import { useMediaStream } from "../contexts/MediaStreamContext";
+import { RecordState, VisualizerVariant } from "../types";
+import type { AudioPulseProps } from "../types";
+import {
+  renderLine,
+  renderBars,
+  renderCircle,
+  renderMirror,
+  renderDots,
+} from "../renderers";
 
 const AudioVisualizer = ({
   state,
   onStop,
   onError,
-  foregroundColor   = '#3b82f6',
-  backgroundColor   = 'transparent',
-  lineWidth         = 2,
-  height            = 60,
-  className         = '',
-  style             = {},
-  canvasStyle       = {},
+  variant = VisualizerVariant.LINE,
+  foregroundColor = "#3b82f6",
+  backgroundColor = "transparent",
+  lineWidth = 2,
+  height = 60,
+  className = "",
+  style = {},
+  canvasStyle = {},
+  barSkipBins = 4,
+  barSilenceThreshold = 20,
   renderVisualizer,
 }: AudioPulseProps) => {
-  const canvasRef                         = useRef<HTMLCanvasElement>(null);
-  const { analyser }                      = useAudioAnalyser();
-  const { start, stop, pause, resume,
-          isPause, isStop, isError, url } = useMediaStream();
-  const [wave, setWave]                   = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { analyser } = useAudioAnalyser();
+  const { start, stop, pause, resume, isPause, isStop, isError, url } =
+    useMediaStream();
+  const [wave, setWave] = useState(false);
 
-  // Notify parent when recording stops
+  // ── Notify parent when recording stops ──────────────────────────────────
   useEffect(() => {
     if (isStop && onStop && url && state === RecordState.STOP) {
       onStop(url);
     }
   }, [isStop, url]);
 
-  // Notify parent on mic error
+  // ── Notify parent on mic error ───────────────────────────────────────────
   useEffect(() => {
     if (isError && onError) onError(isError);
   }, [isError]);
 
-  // Canvas waveform drawing loop
+  // ── Canvas drawing loop ──────────────────────────────────────────────────
   useEffect(() => {
     if (!analyser) return;
 
     let raf: number;
+    const isFrequencyVariant = variant === VisualizerVariant.BARS;
     const data = new Uint8Array(analyser.frequencyBinCount);
 
-    const drawBackground = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
-      if (backgroundColor && backgroundColor !== 'transparent') {
+    const drawBackground = (
+      ctx: CanvasRenderingContext2D,
+      w: number,
+      h: number,
+    ) => {
+      if (backgroundColor && backgroundColor !== "transparent") {
         ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, w, h);
       } else {
@@ -51,9 +66,9 @@ const AudioVisualizer = ({
       }
     };
 
-    // Faint flat line when idle or paused
-    const drawFlatLine = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
-      ctx.lineWidth   = lineWidth;
+    const drawIdle = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
+      // Faint centre line when not actively recording
+      ctx.lineWidth = lineWidth;
       ctx.strokeStyle = foregroundColor;
       ctx.globalAlpha = 0.3;
       ctx.beginPath();
@@ -63,60 +78,75 @@ const AudioVisualizer = ({
       ctx.globalAlpha = 1;
     };
 
-    // Smooth bezier waveform during recording
-    const drawWave = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
-      ctx.lineWidth   = lineWidth;
-      ctx.strokeStyle = foregroundColor;
-      ctx.lineJoin    = 'round';
-      ctx.lineCap     = 'round';
-      ctx.beginPath();
-
-      const sliceWidth = w / (data.length - 1);
-      ctx.moveTo(0, (data[0] / 255) * h);
-
-      for (let i = 1; i < data.length - 1; i++) {
-        const x1   = (i - 1) * sliceWidth;
-        const x2   = i * sliceWidth;
-        const midX = (x1 + x2) / 2;
-        const y1   = (data[i - 1] / 255) * h;
-        const y2   = (data[i] / 255) * h;
-        ctx.quadraticCurveTo(x1, y1, midX, (y1 + y2) / 2);
-      }
-
-      ctx.lineTo(w, (data[data.length - 1] / 255) * h);
-      ctx.stroke();
-    };
-
     const draw = () => {
       raf = requestAnimationFrame(draw);
-      analyser.getByteTimeDomainData(data);
+
+      if (isFrequencyVariant) {
+        analyser.getByteFrequencyData(data);
+      } else {
+        analyser.getByteTimeDomainData(data);
+      }
 
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       const { width: w, height: h } = canvas;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       drawBackground(ctx, w, h);
-      wave ? drawWave(ctx, w, h) : drawFlatLine(ctx, w, h);
+
+      if (!wave) {
+        drawIdle(ctx, w, h);
+        return;
+      }
+
+      switch (variant) {
+        case VisualizerVariant.BARS:
+          renderBars(
+            ctx,
+            data,
+            w,
+            h,
+            foregroundColor,
+            barSkipBins,
+            barSilenceThreshold,
+          );
+          break;
+        case VisualizerVariant.CIRCLE:
+          renderCircle(ctx, data, w, h, foregroundColor, lineWidth);
+          break;
+        case VisualizerVariant.MIRROR:
+          renderMirror(ctx, data, w, h, foregroundColor, lineWidth);
+          break;
+        case VisualizerVariant.DOTS:
+          renderDots(ctx, data, w, h, foregroundColor);
+          break;
+        case VisualizerVariant.LINE:
+        default:
+          renderLine(ctx, data, w, h, foregroundColor, lineWidth);
+          break;
+      }
     };
 
     draw();
     return () => cancelAnimationFrame(raf);
-  }, [analyser, wave, foregroundColor, backgroundColor, lineWidth]);
+  }, [
+    analyser,
+    wave,
+    variant,
+    foregroundColor,
+    backgroundColor,
+    lineWidth,
+    barSkipBins,
+    barSilenceThreshold,
+  ]);
 
-  // State machine — drives wave flag and media stream
+  // ── State machine ────────────────────────────────────────────────────────
   useEffect(() => {
     switch (state) {
       case RecordState.START:
-        // Always call start() — MediaStreamContext handles
-        // whether this is a fresh start or a resume from pause
-        if (isPause) {
-          resume();
-        } else {
-          start();
-        }
+        isPause ? resume() : start();
         setWave(true);
         break;
       case RecordState.PAUSE:
@@ -128,7 +158,6 @@ const AudioVisualizer = ({
         setWave(false);
         break;
       case RecordState.NONE:
-        // Reset wave when consumer resets state to NONE
         setWave(false);
         break;
       default:
@@ -136,6 +165,7 @@ const AudioVisualizer = ({
     }
   }, [state]);
 
+  // ── Custom render prop ───────────────────────────────────────────────────
   if (renderVisualizer) {
     return (
       <div className={`audio-pulse__wrapper ${className}`} style={style}>
@@ -147,13 +177,13 @@ const AudioVisualizer = ({
   return (
     <div
       className={`audio-pulse__wrapper ${className}`}
-      style={{ width: '100%', ...style }}
+      style={{ width: "100%", ...style }}
     >
       <canvas
         ref={canvasRef}
         height={height}
         className="audio-pulse__canvas"
-        style={{ width: '100%', display: 'block', ...canvasStyle }}
+        style={{ width: "100%", display: "block", ...canvasStyle }}
       />
     </div>
   );

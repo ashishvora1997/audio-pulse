@@ -6,18 +6,10 @@
 [![bundle size](https://img.shields.io/bundlephobia/minzip/audio-pulse)](https://bundlephobia.com/package/audio-pulse)
 [![license](https://img.shields.io/npm/l/audio-pulse)](LICENSE)
 
-**Dark theme**
-
-![audio-pulse waveform dark](./waveform.gif)
-
-**Light theme**
-
-![audio-pulse waveform light](./waveform-light.gif)
-
 ---
 
 - ✅ **Zero config** — one component, plug in and record
-- 🎨 **Fully customizable** — colors, size, line width, or bring your own canvas renderer
+- 🎨 **5 built-in variants** — line, bars, circle, mirror, dots
 - 🪝 **Hook included** — `useAudioRecorder` for clean state management
 - 🔷 **TypeScript-first** — full types, no `@types/` package needed
 - 📦 **Tiny bundle** — built with tsup + esbuild, tree-shakeable ESM + CJS
@@ -39,12 +31,33 @@ pnpm add audio-pulse
 
 ---
 
+## Variants
+
+Switch between visualizer styles using the `variant` prop.
+
+### `line` (default)
+![line](./waveform-line.gif)
+
+### `bars`
+![bars](./waveform-bars.gif)
+
+### `mirror`
+![mirror](./waveform-mirror.gif)
+
+### `dots`
+![dots](./waveform-dots.gif)
+
+### `circle`
+![circle](./waveform-circle.gif)
+
+---
+
 ## Full Example
 
 Complete recorder with correct button visibility at every state.
 
 **State flow:**
-- `NONE` → **Start** button only
+- `NONE` → **Start** only
 - `START` (recording) → **Pause** + **Stop**
 - `PAUSE` → **Resume** + **Stop**
 - After stop → audio player + **Start Again**
@@ -55,7 +68,7 @@ Complete recorder with correct button visibility at every state.
 
 ```tsx
 import { useState } from 'react';
-import AudioPulse, { useAudioRecorder, RecordState, AudioResult } from 'audio-pulse';
+import AudioPulse, { useAudioRecorder, RecordState, AudioResult, VisualizerVariant } from 'audio-pulse';
 
 export default function Recorder() {
   const { recordState, start, pause, stop, reset } = useAudioRecorder();
@@ -66,9 +79,9 @@ export default function Recorder() {
   };
 
   const handleStartAgain = () => {
-    setAudio(null);           // hide player
-    reset();                  // go back to NONE — clean context teardown
-    setTimeout(start, 0);    // start fresh on next tick
+    setAudio(null);
+    reset();
+    setTimeout(start, 0);
   };
 
   return (
@@ -80,6 +93,7 @@ export default function Recorder() {
           state={recordState}
           onStop={handleStop}
           onError={(err) => console.error(err)}
+          variant={VisualizerVariant.BARS}
           foregroundColor="#3b82f6"
           backgroundColor="#0f172a"
           lineWidth={2}
@@ -127,12 +141,33 @@ export default function Recorder() {
 
 ---
 
+## `variant` Prop
+
+```tsx
+import { VisualizerVariant } from 'audio-pulse';
+
+<AudioPulse variant={VisualizerVariant.LINE}   ... />  // smooth bezier wave (default)
+<AudioPulse variant={VisualizerVariant.BARS}   ... />  // frequency bar chart
+<AudioPulse variant={VisualizerVariant.MIRROR} ... />  // wave mirrored top + bottom
+<AudioPulse variant={VisualizerVariant.DOTS}   ... />  // dot particle wave
+<AudioPulse variant={VisualizerVariant.CIRCLE} ... />  // radial circular wave
+```
+
+Or use the string values directly:
+
+```tsx
+<AudioPulse variant="bars" ... />
+```
+
+---
+
 ## Light Theme Example
 
 ```tsx
 <AudioPulse
   state={recordState}
   onStop={handleStop}
+  variant="mirror"
   foregroundColor="#3b82f6"
   backgroundColor="#f0f5ff"
   lineWidth={2}
@@ -181,15 +216,19 @@ export default function App() {
 | `state` | `RecordStateType` | — | **Required.** Current recording state |
 | `onStop` | `(result: AudioResult) => void` | — | Called with audio data when recording stops |
 | `onError` | `(error: string) => void` | — | Called when mic access is denied |
-| `foregroundColor` | `string` | `'#3b82f6'` | Waveform stroke color |
+| `variant` | `VisualizerVariantType` | `'line'` | Visualizer style — `line`, `bars`, `circle`, `mirror`, `dots` |
+| `foregroundColor` | `string` | `'#3b82f6'` | Waveform stroke / fill color |
 | `backgroundColor` | `string` | `'transparent'` | Canvas background fill |
-| `lineWidth` | `number` | `2` | Waveform stroke width in px |
+| `lineWidth` | `number` | `2` | Stroke width in px (line, mirror, circle) |
 | `height` | `number` | `60` | Canvas height in px |
-| `smoothingTimeConstant` | `number` | `1` | Analyser smoothing 0–1. Lower = more reactive |
+| `smoothingTimeConstant` | `number` | `0.8` | Analyser smoothing 0–1. Lower = more reactive |
+| `fftSize` | `number` | `512` | FFT size (power of 2). Lower = more dramatic movement |
+| `barSkipBins` | `number` | `4` | `bars` only — low-frequency bins to skip (removes DC offset hum) |
+| `barSilenceThreshold` | `number` | `20` | `bars` only — minimum bin value 0–255 to draw a bar (hides idle noise) |
 | `className` | `string` | `''` | CSS class on the outer wrapper |
 | `style` | `CSSProperties` | `{}` | Inline style on the outer wrapper |
 | `canvasStyle` | `CSSProperties` | `{}` | Inline style on `<canvas>` |
-| `renderVisualizer` | `(ref: RefObject<HTMLCanvasElement>) => ReactNode` | — | Custom render prop — replaces default canvas |
+| `renderVisualizer` | `(ref) => ReactNode` | — | Custom render prop — replaces default canvas |
 
 ---
 
@@ -202,6 +241,18 @@ RecordState.START  // 'start'  — recording
 RecordState.PAUSE  // 'pause'  — paused
 RecordState.STOP   // 'stop'   — stopped, onStop fires
 RecordState.NONE   // 'none'   — initial / reset
+```
+
+## `VisualizerVariant`
+
+```ts
+import { VisualizerVariant } from 'audio-pulse';
+
+VisualizerVariant.LINE    // 'line'
+VisualizerVariant.BARS    // 'bars'
+VisualizerVariant.CIRCLE  // 'circle'
+VisualizerVariant.MIRROR  // 'mirror'
+VisualizerVariant.DOTS    // 'dots'
 ```
 
 ---
@@ -245,12 +296,7 @@ Full control — you render the canvas, audio-pulse drives it:
   onStop={handleStop}
   renderVisualizer={(ref) => (
     <div style={{ background: '#000', padding: 16, borderRadius: 8 }}>
-      <canvas
-        ref={ref}
-        width={500}
-        height={120}
-        style={{ display: 'block', width: '100%' }}
-      />
+      <canvas ref={ref} width={500} height={120} style={{ display: 'block', width: '100%' }} />
     </div>
   )}
 />
@@ -262,11 +308,8 @@ Full control — you render the canvas, audio-pulse drives it:
 
 ```tsx
 import {
-  MediaStreamProvider,
-  InputAudioProvider,
-  AudioAnalyserProvider,
-  useAudioAnalyser,
-  useMediaStream,
+  MediaStreamProvider, InputAudioProvider,
+  AudioAnalyserProvider, useAudioAnalyser, useMediaStream,
 } from 'audio-pulse';
 
 function MyVisualizer() {

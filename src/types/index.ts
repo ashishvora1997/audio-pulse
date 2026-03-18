@@ -1,13 +1,26 @@
 // ─── Record State ────────────────────────────────────────────────────────────
 
 export const RecordState = Object.freeze({
-  START: 'start',
-  PAUSE: 'pause',
-  STOP:  'stop',
-  NONE:  'none',
+  START: "start",
+  PAUSE: "pause",
+  STOP: "stop",
+  NONE: "none",
 } as const);
 
 export type RecordStateType = (typeof RecordState)[keyof typeof RecordState];
+
+// ─── Visualizer Variants ──────────────────────────────────────────────────────
+
+export const VisualizerVariant = Object.freeze({
+  LINE: "line",
+  BARS: "bars",
+  CIRCLE: "circle",
+  MIRROR: "mirror",
+  DOTS: "dots",
+} as const);
+
+export type VisualizerVariantType =
+  (typeof VisualizerVariant)[keyof typeof VisualizerVariant];
 
 // ─── Audio Result (returned via onStop) ──────────────────────────────────────
 
@@ -29,20 +42,49 @@ export interface AudioPulseProps {
   onStop?: (result: AudioResult) => void;
   /** Called with an error message string if mic access is denied */
   onError?: (error: string) => void;
-  /** Waveform stroke color. @default '#3b82f6' */
+  /**
+   * Visualizer style variant.
+   * - 'line'   — smooth bezier waveform (default)
+   * - 'bars'   — frequency bar chart
+   * - 'circle' — radial / circular waveform
+   * - 'mirror' — waveform mirrored top and bottom
+   * - 'dots'   — dot particle wave
+   * @default 'line'
+   */
+  variant?: VisualizerVariantType;
+  /** Waveform stroke / fill color. @default '#3b82f6' */
   foregroundColor?: string;
   /** Canvas background fill. @default 'transparent' */
   backgroundColor?: string;
-  /** Stroke line width in px. @default 2 */
+  /** Stroke line width in px (line, mirror, circle variants). @default 2 */
   lineWidth?: number;
   /** Canvas height in px. @default 60 */
   height?: number;
   /**
    * AnalyserNode.smoothingTimeConstant (0–1).
-   * Lower = more reactive, higher = smoother.
-   * @default 1
+   * Lower = more reactive / taller waves. Higher = smoother.
+   * @default 0.8
    */
   smoothingTimeConstant?: number;
+  /**
+   * AnalyserNode.fftSize — must be power of 2 (32–32768).
+   * Lower = more dramatic wave movement. Higher = more detail.
+   * @default 512
+   */
+  fftSize?: number;
+  /**
+   * `bars` variant only — number of low-frequency bins to skip.
+   * The first few bins contain DC offset / hardware hum that causes
+   * leftmost bars to jump in silence.
+   * @default 4
+   */
+  barSkipBins?: number;
+  /**
+   * `bars` variant only — minimum bin value (0–255) to render a bar.
+   * Bins below this threshold are hidden, eliminating idle noise bars.
+   * @default 20
+   */
+  barSilenceThreshold?: number;
   /** Extra CSS class on the outer wrapper div */
   className?: string;
   /** Inline style on the outer wrapper div */
@@ -50,15 +92,12 @@ export interface AudioPulseProps {
   /** Inline style on the <canvas> element */
   canvasStyle?: React.CSSProperties;
   /**
-   * Custom render prop — replaces the default canvas entirely.
+   * Custom render prop — replaces the built-in canvas entirely.
    * You receive the canvasRef and are responsible for rendering it.
-   *
-   * @example
-   * renderVisualizer={(ref) => (
-   *   <canvas ref={ref} width={400} height={100} style={{ background: '#000' }} />
-   * )}
    */
-  renderVisualizer?: (canvasRef: React.RefObject<HTMLCanvasElement>) => React.ReactNode;
+  renderVisualizer?: (
+    canvasRef: React.RefObject<HTMLCanvasElement>,
+  ) => React.ReactNode;
 }
 
 // ─── useAudioRecorder hook return ────────────────────────────────────────────
@@ -71,7 +110,7 @@ export interface UseAudioRecorderReturn {
   pause: () => void;
   /** Set state to STOP */
   stop: () => void;
-  /** Toggle between START and PAUSE (starts if NONE/STOP) */
+  /** Toggle between START and PAUSE */
   toggle: () => void;
   /** Reset state back to NONE */
   reset: () => void;

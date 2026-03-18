@@ -8,6 +8,10 @@
 
 ---
 
+[![Try Live Demo](https://img.shields.io/badge/Try%20Live%20Demo-Open%20in%20StackBlitz-0ea5e9?style=for-the-badge&logo=stackblitz&logoColor=white)](https://stackblitz.com/edit/vitejs-vite-hmdsbtnj?file=src%2FApp.tsx)
+
+---
+
 - ✅ **Zero config** — one component, plug in and record
 - 🎨 **5 built-in variants** — line, bars, circle, mirror, dots
 - 🪝 **Hook included** — `useAudioRecorder` for clean state management
@@ -36,18 +40,23 @@ pnpm add audio-pulse
 Switch between visualizer styles using the `variant` prop.
 
 ### `line` (default)
+
 ![line](./waveform-line.gif)
 
 ### `bars`
+
 ![bars](./waveform-bars.gif)
 
 ### `mirror`
+
 ![mirror](./waveform-mirror.gif)
 
 ### `dots`
+
 ![dots](./waveform-dots.gif)
 
 ### `circle`
+
 ![circle](./waveform-circle.gif)
 
 ---
@@ -57,10 +66,11 @@ Switch between visualizer styles using the `variant` prop.
 Complete recorder with correct button visibility at every state.
 
 **State flow:**
-- `NONE` → **Start** only
-- `START` (recording) → **Pause** + **Stop**
-- `PAUSE` → **Resume** + **Stop**
-- After stop → audio player + **Start Again**
+
+* `NONE` → **Start** only
+* `START` (recording) → **Pause** + **Stop**
+* `PAUSE` → **Resume** + **Stop**
+* After stop → audio player + **Start Again**
 
 > ⚠️ Keep `<AudioPulse>` always mounted — use `display: none` to hide it rather
 > than conditionally rendering it. Unmounting tears down the internal audio

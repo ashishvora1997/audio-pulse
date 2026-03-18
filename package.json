@@ -1,7 +1,7 @@
 {
   "name": "audio-pulse",
   "version": "1.2.0",
-  "description": "React audio recorder component with real-time waveform visualization. Record MP3 audio, visualize sound waves, supports pause, resume, stop. TypeScript ready.",
+  "description": "AudioPulse: A React audio recorder with real-time waveforms. Record MP3, pause/resume, and visualize sound waves in TypeScript.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -29,6 +29,7 @@
     "audio-recorder-react",
     "react-recorder",
     "waveform",
+    "visualization",
     "waveform-visualizer",
     "audio-visualizer",
     "react-audio",
@@ -44,6 +45,7 @@
     "react",
     "typescript",
     "canvas",
+    "web-audio",
     "web-audio-api"
   ],
   "author": {

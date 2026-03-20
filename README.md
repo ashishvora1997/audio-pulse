@@ -1,23 +1,49 @@
-# 🎙️ audio-pulse
+<div align="center">
 
-**React audio recorder** with real-time waveform visualization. Record MP3 audio from the microphone, visualize live sound waves on a canvas, and control recording state with a simple hook — fully typed with TypeScript.
+<img src="./waveform-line.gif" width="600" alt="audio-pulse waveform" />
 
-[![npm version](https://img.shields.io/npm/v/audio-pulse)](https://www.npmjs.com/package/audio-pulse)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/audio-pulse)](https://bundlephobia.com/package/audio-pulse)
-[![license](https://img.shields.io/npm/l/audio-pulse)](LICENSE)
+# audio-pulse
+
+**React audio recorder with real-time waveform visualization**
+
+Record MP3 audio from the microphone, visualize live sound waves on a canvas,
+and control recording state with a simple hook — fully typed with TypeScript.
+
+[![npm version](https://img.shields.io/npm/v/audio-pulse?style=flat-square&color=3b82f6)](https://www.npmjs.com/package/audio-pulse)
+[![npm downloads](https://img.shields.io/npm/dm/audio-pulse?style=flat-square&color=10b981)](https://www.npmjs.com/package/audio-pulse)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/audio-pulse?style=flat-square&color=f97316)](https://bundlephobia.com/package/audio-pulse)
+[![license](https://img.shields.io/npm/l/audio-pulse?style=flat-square&color=94a3b8)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ready-3b82f6?style=flat-square)](https://www.typescriptlang.org)
+
+[**Live Demo & Playground →**](https://audio-pulse-playground.vercel.app) · [Docs](https://audio-pulse-playground.vercel.app) · [npm](https://www.npmjs.com/package/audio-pulse) · [Report Bug](https://github.com/ashishvora1997/audio-pulse/issues)
+
+</div>
 
 ---
 
-[![Try Live Demo](https://img.shields.io/badge/Try%20Live%20Demo-Open%20in%20StackBlitz-0ea5e9?style=for-the-badge&logo=stackblitz&logoColor=white)](https://stackblitz.com/edit/vitejs-vite-hmdsbtnj?file=src%2FApp.tsx)
-
----
+## Features
 
 - ✅ **Zero config** — one component, plug in and record
-- 🎨 **5 built-in variants** — line, bars, circle, mirror, dots
-- 🪝 **Hook included** — `useAudioRecorder` for clean state management
-- 🔷 **TypeScript-first** — full types, no `@types/` package needed
+- 🎨 **5 built-in variants** — line, bars, mirror, dots, circle
+- 🪝 **`useAudioRecorder` hook** — clean state management, no boilerplate
+- 🔷 **TypeScript-first** — full types included, no `@types/` package needed
 - 📦 **Tiny bundle** — built with tsup + esbuild, tree-shakeable ESM + CJS
-- 🌐 **Cross-browser** — MP3 output via `audio-recorder-polyfill` (Safari & Firefox)
+- 🌐 **Cross-browser** — MP3 output via polyfill (Safari + Firefox support)
+- 🎛️ **Fully customizable** — colors, size, line width, or bring your own canvas
+
+---
+
+## Variants
+
+| Preview | Name | Description |
+|---|---|---|
+| ![line](./waveform-line.gif) | `line` | Smooth bezier waveform — default |
+| ![bars](./waveform-bars.gif) | `bars` | Frequency bar chart |
+| ![mirror](./waveform-mirror.gif) | `mirror` | Waveform reflected top + bottom |
+| ![dots](./waveform-dots.gif) | `dots` | Particle dot wave |
+| ![circle](./waveform-circle.gif) | `circle` | Radial circular waveform |
+
+> 🎮 **Try all variants live →** [audio-pulse-playground.vercel.app](https://audio-pulse-playground.vercel.app)
 
 ---
 
@@ -31,37 +57,11 @@ yarn add audio-pulse
 pnpm add audio-pulse
 ```
 
-> **Peer deps:** `react >= 17` and `react-dom >= 17` must already be in your project.
+> **Peer dependencies** — `react >= 17` and `react-dom >= 17` must be installed in your project.
 
 ---
 
-## Variants
-
-Switch between visualizer styles using the `variant` prop.
-
-### `line` (default)
-
-![line](./waveform-line.gif)
-
-### `bars`
-
-![bars](./waveform-bars.gif)
-
-### `mirror`
-
-![mirror](./waveform-mirror.gif)
-
-### `dots`
-
-![dots](./waveform-dots.gif)
-
-### `circle`
-
-![circle](./waveform-circle.gif)
-
----
-
-## Full Example
+## Quick Start
 
 Complete recorder with correct button visibility at every state.
 
@@ -149,98 +149,48 @@ export default function Recorder() {
 }
 ```
 
----
-
-## `variant` Prop
-
-```tsx
-import { VisualizerVariant } from 'audio-pulse';
-
-<AudioPulse variant={VisualizerVariant.LINE}   ... />  // smooth bezier wave (default)
-<AudioPulse variant={VisualizerVariant.BARS}   ... />  // frequency bar chart
-<AudioPulse variant={VisualizerVariant.MIRROR} ... />  // wave mirrored top + bottom
-<AudioPulse variant={VisualizerVariant.DOTS}   ... />  // dot particle wave
-<AudioPulse variant={VisualizerVariant.CIRCLE} ... />  // radial circular wave
-```
-
-Or use the string values directly:
-
-```tsx
-<AudioPulse variant="bars" ... />
-```
-
----
-
-## Light Theme Example
-
-```tsx
-<AudioPulse
-  state={recordState}
-  onStop={handleStop}
-  variant="mirror"
-  foregroundColor="#3b82f6"
-  backgroundColor="#f0f5ff"
-  lineWidth={2}
-  height={80}
-  style={{
-    borderRadius: 8,
-    overflow: 'hidden',
-    border: '1px solid #b4c8e6',
-  }}
-/>
-```
-
----
-
-## Quick Start (minimal)
-
-```tsx
-import { useState } from 'react';
-import AudioPulse, { RecordState, RecordStateType, AudioResult } from 'audio-pulse';
-
-export default function App() {
-  const [state, setState] = useState<RecordStateType>(RecordState.NONE);
-
-  const handleStop = (audio: AudioResult) => {
-    console.log(audio.url);   // object URL → use in <audio src={...} />
-    console.log(audio.blob);  // Blob (audio/mp3)
-  };
-
-  return (
-    <>
-      <AudioPulse state={state} onStop={handleStop} />
-      <button onClick={() => setState(RecordState.START)}>Start</button>
-      <button onClick={() => setState(RecordState.PAUSE)}>Pause</button>
-      <button onClick={() => setState(RecordState.STOP)}>Stop</button>
-    </>
-  );
-}
-```
+> ⚠️ **Always keep `<AudioPulse>` mounted.** Unmounting tears down the internal Web Audio contexts.
+> Use `display: none` to hide it instead of conditional rendering.
 
 ---
 
 ## Props
 
+### Core
+
 | Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `state` | `RecordStateType` | — | **Required.** Current recording state |
+|---|---|---|---|
+| `state` | `RecordStateType` | **required** | Current recording state |
 | `onStop` | `(result: AudioResult) => void` | — | Called with audio data when recording stops |
 | `onError` | `(error: string) => void` | — | Called when mic access is denied |
-| `variant` | `VisualizerVariantType` | `'line'` | Visualizer style — `line`, `bars`, `circle`, `mirror`, `dots` |
+| `variant` | `VisualizerVariantType` | `'line'` | Visualizer style |
+
+### Appearance
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
 | `foregroundColor` | `string` | `'#3b82f6'` | Waveform stroke / fill color |
 | `backgroundColor` | `string` | `'transparent'` | Canvas background fill |
 | `lineWidth` | `number` | `2` | Stroke width in px (line, mirror, circle) |
 | `height` | `number` | `60` | Canvas height in px |
-| `smoothingTimeConstant` | `number` | `0.8` | Analyser smoothing 0–1. Lower = more reactive |
-| `fftSize` | `number` | `512` | FFT size (power of 2). Lower = more dramatic movement |
-| `barSkipBins` | `number` | `4` | `bars` only — low-frequency bins to skip (removes DC offset hum) |
-| `barSilenceThreshold` | `number` | `20` | `bars` only — minimum bin value 0–255 to draw a bar (hides idle noise) |
 | `className` | `string` | `''` | CSS class on the outer wrapper |
 | `style` | `CSSProperties` | `{}` | Inline style on the outer wrapper |
-| `canvasStyle` | `CSSProperties` | `{}` | Inline style on `<canvas>` |
-| `renderVisualizer` | `(ref) => ReactNode` | — | Custom render prop — replaces default canvas |
+| `canvasStyle` | `CSSProperties` | `{}` | Inline style on the `<canvas>` |
 
----
+### Audio Analysis
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `smoothingTimeConstant` | `number` | `0.8` | Analyser smoothing 0–1. Lower = more reactive |
+| `fftSize` | `number` | `512` | FFT size (power of 2). Lower = more movement |
+| `barSkipBins` | `number` | `4` | `bars` only — skip DC offset bins (stops idle jumping) |
+| `barSilenceThreshold` | `number` | `20` | `bars` only — min value 0–255 to render a bar |
+
+### Custom Renderer
+
+| Prop | Type | Description |
+|---|---|---|
+| `renderVisualizer` | `(ref: RefObject<HTMLCanvasElement>) => ReactNode` | Replace the default canvas entirely |
 
 ## `RecordState`
 
@@ -252,31 +202,6 @@ RecordState.PAUSE  // 'pause'  — paused
 RecordState.STOP   // 'stop'   — stopped, onStop fires
 RecordState.NONE   // 'none'   — initial / reset
 ```
-
-## `VisualizerVariant`
-
-```ts
-import { VisualizerVariant } from 'audio-pulse';
-
-VisualizerVariant.LINE    // 'line'
-VisualizerVariant.BARS    // 'bars'
-VisualizerVariant.CIRCLE  // 'circle'
-VisualizerVariant.MIRROR  // 'mirror'
-VisualizerVariant.DOTS    // 'dots'
-```
-
----
-
-## `AudioResult`
-
-```ts
-interface AudioResult {
-  blob: Blob;    // Raw MP3 Blob
-  url:  string;  // Object URL — use in <audio src={url} />
-  type: string;  // 'audio/mp3'
-}
-```
-
 ---
 
 ## `useAudioRecorder` Hook
@@ -286,7 +211,7 @@ const { recordState, start, pause, stop, toggle, reset } = useAudioRecorder();
 ```
 
 | Return | Type | Description |
-|--------|------|-------------|
+|---|---|---|
 | `recordState` | `RecordStateType` | Current state |
 | `start` | `() => void` | Start or resume recording |
 | `pause` | `() => void` | Pause recording |
@@ -294,11 +219,78 @@ const { recordState, start, pause, stop, toggle, reset } = useAudioRecorder();
 | `toggle` | `() => void` | Toggle START ↔ PAUSE |
 | `reset` | `() => void` | Reset back to NONE |
 
+**State machine:**
+
+```
+NONE ──start()──► START ──pause()──► PAUSE
+                    │                  │
+                    └────stop()────────┘
+                              │
+                            STOP
+                              │
+                         reset() → NONE
+```
+
 ---
 
-## Custom Canvas Renderer
+## Variants
 
-Full control — you render the canvas, audio-pulse drives it:
+```tsx
+import { VisualizerVariant } from 'audio-pulse';
+
+<AudioPulse variant={VisualizerVariant.LINE}   ... />  // smooth bezier wave (default)
+<AudioPulse variant={VisualizerVariant.BARS}   ... />  // frequency bar chart
+<AudioPulse variant={VisualizerVariant.MIRROR} ... />  // wave mirrored top + bottom
+<AudioPulse variant={VisualizerVariant.DOTS}   ... />  // dot particle wave
+<AudioPulse variant={VisualizerVariant.CIRCLE} ... />  // radial circular wave
+
+// Or plain strings:
+<AudioPulse variant="bars" ... />
+```
+
+---
+
+## Types
+
+All types exported directly from `audio-pulse` — no `@types/` package needed.
+
+```ts
+import type {
+  AudioResult,
+  RecordStateType,
+  VisualizerVariantType,
+  AudioPulseProps,
+  UseAudioRecorderReturn,
+} from 'audio-pulse';
+
+// AudioResult — passed to onStop
+interface AudioResult {
+  blob: Blob;    // Raw MP3 Blob
+  url:  string;  // Object URL — use in <audio src={url} />
+  type: string;  // 'audio/mp3'
+}
+```
+
+---
+
+## Examples
+
+### Light theme
+
+```tsx
+<AudioPulse
+  state={recordState}
+  onStop={handleStop}
+  variant="mirror"
+  foregroundColor="#3b82f6"
+  backgroundColor="#f0f5ff"
+  lineWidth={2}
+  height={80}
+  style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #b4c8e6' }}
+/>
+```
+
+### Custom canvas renderer
 
 ```tsx
 <AudioPulse
@@ -306,33 +298,60 @@ Full control — you render the canvas, audio-pulse drives it:
   onStop={handleStop}
   renderVisualizer={(ref) => (
     <div style={{ background: '#000', padding: 16, borderRadius: 8 }}>
-      <canvas ref={ref} width={500} height={120} style={{ display: 'block', width: '100%' }} />
+      <canvas
+        ref={ref}
+        width={500}
+        height={120}
+        style={{ display: 'block', width: '100%' }}
+      />
     </div>
   )}
 />
 ```
 
+### Upload to server
+
+```tsx
+const handleStop = async (audio: AudioResult) => {
+  const formData = new FormData();
+  formData.append('file', audio.blob, 'recording.mp3');
+
+  await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+  });
+};
+```
+
 ---
 
-## Advanced: Raw Context Access
+## Advanced — Raw Context Access
+
+For fully custom visualizers, access the internal Web Audio API contexts directly:
 
 ```tsx
 import {
-  MediaStreamProvider, InputAudioProvider,
-  AudioAnalyserProvider, useAudioAnalyser, useMediaStream,
+  MediaStreamProvider,
+  InputAudioProvider,
+  AudioAnalyserProvider,
+  useAudioAnalyser,
+  useMediaStream,
 } from 'audio-pulse';
 
 function MyVisualizer() {
   const { analyser } = useAudioAnalyser();
-  const { start, stop } = useMediaStream();
-  return <canvas />;
+  // analyser.getByteTimeDomainData(data) or
+  // analyser.getByteFrequencyData(data) in a rAF loop
+
+  const { start, stop, url, isStop } = useMediaStream();
+  return <canvas id="my-canvas" />;
 }
 
-function App() {
+export default function App() {
   return (
     <MediaStreamProvider audio video={false}>
       <InputAudioProvider>
-        <AudioAnalyserProvider>
+        <AudioAnalyserProvider smoothingTimeConstant={0.8} fftSize={512}>
           <MyVisualizer />
         </AudioAnalyserProvider>
       </InputAudioProvider>
@@ -345,17 +364,39 @@ function App() {
 
 ## Browser Support
 
-| Browser | Status |
-|---------|--------|
+| Browser | Support |
+|---|---|
 | Chrome | ✅ Native |
 | Edge | ✅ Native |
 | Firefox | ✅ via polyfill |
 | Safari | ✅ via polyfill |
+| Chrome Android | ✅ Native |
+| Safari iOS | ✅ via polyfill |
 
-> Mic access requires **HTTPS** in production.
+> **HTTPS required** — `getUserMedia` only works on secure origins (HTTPS or localhost).
+
+---
+
+## Contributing
+
+Contributions, issues and feature requests are welcome.
+
+1. Fork the repo
+2. Create a branch — `git checkout -b feature/my-feature`
+3. Commit — `git commit -m 'feat: add my feature'`
+4. Push — `git push origin feature/my-feature`
+5. Open a Pull Request
 
 ---
 
 ## License
 
 MIT © [Ashish Vora](https://github.com/ashishvora1997)
+
+---
+
+<div align="center">
+
+Made with ❤️ &nbsp;·&nbsp; [Live Demo](https://audio-pulse-playground.vercel.app) &nbsp;·&nbsp; [npm](https://www.npmjs.com/package/audio-pulse) &nbsp;·&nbsp; [GitHub](https://github.com/ashishvora1997/audio-pulse)
+
+</div>

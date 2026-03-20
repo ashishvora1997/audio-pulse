@@ -1,6 +1,6 @@
 {
   "name": "audio-pulse",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "AudioPulse: A React audio recorder with real-time waveforms. Record MP3, pause/resume, and visualize sound waves in TypeScript.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -78,5 +78,5 @@
     "type": "git",
     "url": "git+https://github.com/ashishvora1997/audio-pulse"
   },
-  "homepage": "https://github.com/ashishvora1997/audio-pulse#readme"
+  "homepage": "https://audio-pulse-playground.vercel.app"
 }
